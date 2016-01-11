@@ -3,7 +3,7 @@ HWIS
 
 This library (intended for use in a Common Lisp environment) implements a tree data structure and an algorithm for calculating the heaviest weighted independent set in a tree. It was developed in fulfilment of the coding requirements for a single semester graduate course in advanced algorithms.
 
-The main algorithm can be found in the *algorthms.lisp* file.
+The main algorithm can be found in the *algorithm.lisp* file.
 
 ### Loading
 To load the library, issue the following commands:
