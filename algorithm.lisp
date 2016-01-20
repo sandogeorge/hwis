@@ -23,49 +23,46 @@
 (defmethod hwis (node (tree tree) &key path return-sum)
   ;; Return the list of nodes belonging to the heaviest weighted independent
   ;; set of a tree.
+  (let (exclusive inclusive)
+    ;; If node is null, return nil. 
+    (unless node
+      (return-from hwis nil))
 
-  ;; If node is null, return nil. 
-  (if (not node)
-    (return-from hwis nil))
+    ;; If the HWIS has already been calculated for this node, return it.
+    (if (node-hwis node)
+      (if return-sum
+        (return-from hwis (list (sum-weights (node-hwis node))))
+        (return-from hwis (node-hwis node))))
 
-  ;; If the HWIS has already been calculated for this node, return it.
-  (if (node-hwis node)
+    ;; If the node has no VALID children, it is the optimal solution. Return it.
+    (if (and (not (null path)) (= (hash-table-size (adjacencyhash node)) 1))
+      (return-from hwis node))
+
+    (setf path (append path (list (name node))))
+
+    ;; Calculate optimal solution excluding the current node.
+    (setf exclusive
+      (flatten
+        (loop for child in (get-children node tree :exclude path)
+          collect (hwis child tree :path path))))
+
+    ;; Calculate the optimal solution including the current node.
+    (setf inclusive
+      (flatten
+        (append
+          (list node)
+            (loop for grandchild in (get-grandchildren node tree :exclude path)
+              collect (hwis grandchild tree :path path)))))
+
+    ;; True optimal solution is the max of the solutions excluding and including
+    ;; the current node.
+    (setf (node-hwis node)
+      (if (> (sum-weights exclusive) (sum-weights inclusive))
+        exclusive
+        inclusive))
+
+    ;; If the return-sum flag is set, return both the HWIS and its sum of
+    ;; weights.
     (if return-sum
-      (return-from hwis (list (sum-weights (node-hwis node))))
-      (return-from hwis (node-hwis node))))
-
-  ;; If the node has no VALID children, it is the optimal solution. Return it.
-  (if (and (> (length path) 0) (= (hash-table-size (adjacencyhash node)) 1))
-    (return-from hwis node))
-
-  (defvar exclusive)
-  (defvar inclusive)
-
-  (setf path (append path (list (name node))))
-
-  ;; Calculate optimal solution excluding the current node.
-  (setf exclusive
-    (flatten
-      (loop for child in (get-children node tree :exclude path)
-        collect (hwis child tree :path path))))
-
-  ;; Calculate the optimal solution including the current node.
-  (setf inclusive
-    (flatten
-      (append
-        (list node)
-          (loop for grandchild in (get-grandchildren node tree :exclude path)
-            collect (hwis grandchild tree :path path)))))
-
-  ;; True optimal solution is the max of the solutions excluding and including
-  ;; the current node.
-  (setf (node-hwis node)
-    (if (> (sum-weights exclusive) (sum-weights inclusive))
-      exclusive
-      inclusive))
-
-  ;; If the return-sum flag is set, return both the HWIS and its sum of
-  ;; weights.
-  (if return-sum
-    (return-from hwis (list (sum-weights (node-hwis node)) (node-hwis node)))
-    (return-from hwis (node-hwis node))))
+      (return-from hwis (list (sum-weights (node-hwis node)) (node-hwis node)))
+      (return-from hwis (node-hwis node)))))
