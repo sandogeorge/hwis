@@ -17,6 +17,11 @@
 ;;;; 
 ;;;; You should have received a copy of the GNU General Public License
 ;;;; along with HWIS. If not, see <http://www.gnu.org/licenses/>.
+;;;;
+;;;; ===========================================================================
+;;;; ="Rico, I want that tree up to mustard." ~ Skipper, Penguins of Madagascar=
+;;;; ===========================================================================
+
 
 (in-package :com.sandogeorge.hwis)
 
@@ -25,7 +30,7 @@
     (nodehash
       :accessor nodehash
       :initarg :nodehash
-      :type hash-table
+      :type hash-table trailer
       :initform (make-hash-table :test 'equal))
     (nodearray
       :accessor nodearray
